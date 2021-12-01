@@ -16,6 +16,7 @@ import com.eCommerce.eCommerceOrder.entity.ConsumerEntity;
 import com.eCommerce.eCommerceOrder.entity.ConsumerLineItemEntity;
 import com.eCommerce.eCommerceOrder.entity.ConsumerOrderEntity;
 import com.eCommerce.eCommerceOrder.entity.ItemMasterEntity;
+import com.eCommerce.eCommerceOrder.exception.ItemNotFoundException;
 import com.eCommerce.eCommerceOrder.web.mapper.OrderMapper;
 import com.eCommerce.eCommerceOrder.web.model.InputOrder;
 import com.eCommerce.eCommerceOrder.web.model.OrderResponse;
@@ -42,12 +43,13 @@ public class OrderServiceImpl implements OrderService{
 	public OrderResponse createOrder(InputOrder request) {
 		
 		Double totalAmount =  Double.NaN;
-		OrderMapper mapper = new OrderMapper();
-		Double value1 = itemMasterRepository.findPriceByItemName(request.getRequestItemList().get(0).getItemName());
-		
+		OrderMapper mapper = new OrderMapper();		
 		
 		totalAmount = request.getRequestItemList().stream().mapToDouble(x->{
 			Double value = itemMasterRepository.findPriceByItemName(x.getItemName());
+			if(value==null) {
+				throw new ItemNotFoundException();
+			}
 			return value*x.getQuantity();
 		}).sum();
 		
@@ -60,7 +62,10 @@ public class OrderServiceImpl implements OrderService{
 				.map(OrderMapper :: mapRequestToConsumerLineItemEntity)
 				.collect(Collectors.toList());
 		
-		consumerLineItemEntity.stream().forEach(x->x.setItemNumber(itemMasterRepository.findByItemName(x.getItemName()).getItemNumber()));
+		consumerLineItemEntity.stream()
+		.forEach(x->x.setItemNumber
+				(itemMasterRepository.findByItemName
+						(x.getItemName()).orElseThrow(()-> new ItemNotFoundException()).getItemNumber()));
 		
 		consumerLineItemRepository.saveAll(consumerLineItemEntity);
 		
@@ -70,22 +75,10 @@ public class OrderServiceImpl implements OrderService{
 		consumerOrderEntity.setTotalAmount(totalAmount);
 		orderRepository.save(consumerOrderEntity);
 		
-		return orderResponse(consumerEntity, consumerLineItemEntity, consumerOrderEntity, request.getRequestItemList());
+		return mapper.orderResponse(consumerEntity, consumerOrderEntity, request.getRequestItemList());
 	}
 
-	private OrderResponse orderResponse(ConsumerEntity consumerEntity, List<ConsumerLineItemEntity> consumerLineItemEntity,
-			ConsumerOrderEntity consumerOrderEntity, List<RequestItem> input) {
-		OrderResponse orderResponse = new OrderResponse();
-		orderResponse.setEmailId(consumerEntity.getEmailId());
-		orderResponse.setName(consumerEntity.getName());
-		orderResponse.setOrderId(consumerOrderEntity.getOrderId());
-		orderResponse.setPhoneNo(consumerEntity.getPhoneNo());
-		orderResponse.setRequestItemsList(input);
-		orderResponse.setTotalAmountofOrder(consumerOrderEntity.getTotalAmount());
-		orderResponse.setTotalItemsOrdered(consumerOrderEntity.getTotalItemsInOrder());
-		
-		return orderResponse;
-	}
+	
 
 	
 

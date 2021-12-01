@@ -16,8 +16,6 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
 public class RequestItem {
 	
 	@NotNull
@@ -33,37 +31,6 @@ public class RequestItem {
 	@JsonIgnore
 	private Double sellingPrice;
 
-	public String getItemName() {
-		return itemName;
-	}
-
-	public void setItemName(String itemName) {
-		this.itemName = itemName;
-	}
-
-	public int getQuantity() {
-		return quantity;
-	}
-
-	public void setQuantity(int quantity) {
-		this.quantity = quantity;
-	}
-
-	public String getModelNumber() {
-		return modelNumber;
-	}
-
-	public void setModelNumber(String modelNumber) {
-		this.modelNumber = modelNumber;
-	}
-
-	public Double getSellingPrice() {
-		return sellingPrice;
-	}
-
-	public void setSellingPrice(Double sellingPrice) {
-		this.sellingPrice = sellingPrice;
-	}
 
 	
 }

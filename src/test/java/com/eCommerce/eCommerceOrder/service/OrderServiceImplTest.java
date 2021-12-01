@@ -12,14 +12,18 @@ import org.springframework.http.ResponseEntity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.BDDMockito.*;
+
+import java.util.Optional;
 
 import com.eCommerce.eCommerceOrder.dao.ConsumerLineItemRepository;
 import com.eCommerce.eCommerceOrder.dao.ConsumerRepository;
 import com.eCommerce.eCommerceOrder.dao.ItemMasterRepository;
 import com.eCommerce.eCommerceOrder.dao.OrderRepository;
 import com.eCommerce.eCommerceOrder.entity.ItemMasterEntity;
+import com.eCommerce.eCommerceOrder.exception.ItemNotFoundException;
 import com.eCommerce.eCommerceOrder.service.OrderService;
 import com.eCommerce.eCommerceOrder.web.controller.OrderController;
 import com.eCommerce.eCommerceOrder.web.mapper.OrderMapper;
@@ -30,7 +34,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ExtendWith(MockitoExtension.class)
-public class OderServiceImplTest {
+public class OrderServiceImplTest {
 
 	
 	@Mock
@@ -89,7 +93,8 @@ public class OderServiceImplTest {
 		
 		given(itemMasterRepository.findPriceByItemName(requestJson.getRequestItemList().get(0).getItemName())).willReturn(123.11);
 		
-		given(itemMasterRepository.findByItemName(any(String.class))).willReturn(ItemMasterEntity.builder().itemNumber("1").itemName("test data1").build());
+		
+		given(itemMasterRepository.findByItemName(any(String.class))).willReturn(Optional.ofNullable(ItemMasterEntity.builder().itemNumber("1").itemName("test data1").build()));
 		
 		OrderResponse response = serviceImpl.createOrder(requestJson);
 		
@@ -97,4 +102,26 @@ public class OderServiceImplTest {
 		assertEquals(4,response.getTotalItemsOrdered());
 		
 	}
+	
+	@Test
+	void createOrder_ItemNotFoundException_test() {
+		
+		//OrderMapper mapper = new OrderMapper();
+		
+		/*
+		 * given(itemMasterRepository.findPriceByItemName(anyString())).willReturn(null)
+		 * ;
+		 * 
+		 * //given(itemMasterRepository.findByItemName(any(String.class))).willReturn(
+		 * ItemMasterEntity.builder().itemNumber("1").itemName("test data1").build());
+		 * 
+		 * OrderResponse response = serviceImpl.createOrder(requestJson);
+		 * 
+		 * 
+		 * assertThrows(ItemNotFoundException.class, null);
+		 */
+		
+	}
+	
+	
 }
