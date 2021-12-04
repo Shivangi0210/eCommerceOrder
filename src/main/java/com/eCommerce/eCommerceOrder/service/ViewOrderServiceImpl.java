@@ -54,7 +54,7 @@ public class ViewOrderServiceImpl implements ViewOrderService{
 			response.setTotalAmountofOrder(order.get().getTotalAmount());
 			response.setTotalItemsOrdered(order.get().getTotalItemsInOrder());
 			List<RequestItem> itemList = new ArrayList<>();
-			order.get().getConsumerlineItemId().stream()
+			order.get().getConsumerlineItem().stream()
 				.forEach(x->{
 					RequestItem item = new RequestItem();
 					item.setItemName(x.getItemName());

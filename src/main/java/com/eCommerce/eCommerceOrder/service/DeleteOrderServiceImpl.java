@@ -2,6 +2,8 @@ package com.eCommerce.eCommerceOrder.service;
 
 import java.util.Optional;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,7 @@ import com.eCommerce.eCommerceOrder.entity.ConsumerOrderEntity;
 import com.eCommerce.eCommerceOrder.web.model.InputOrder;
 import com.eCommerce.eCommerceOrder.web.model.OrderResponse;
 
+@Transactional
 @Service
 public class DeleteOrderServiceImpl implements DeleteOrderService {
 	
@@ -24,6 +27,7 @@ public class DeleteOrderServiceImpl implements DeleteOrderService {
 	
 	@Autowired
 	ConsumerLineItemRepository consumerLineItemRepository;
+	
 
 	
 	
@@ -31,13 +35,17 @@ public class DeleteOrderServiceImpl implements DeleteOrderService {
 	public String deleteOrder(String orderId) {
 		Optional<ConsumerOrderEntity> order = orderRepository.findById(orderId);
 		
-		order.ifPresent(x->{
-			x.getConsumerlineItemId().stream().forEach(y->{
-				consumerLineItemRepository.deleteById(y.getConsumerLineItemId());
-			});
-		});
+		  order.ifPresent(x->{ x.getConsumerlineItem().stream().forEach(y->{
+		  consumerLineItemRepository.delete(y); }); });
+		 
+		  
+		/*
+		 * for(ConsumerLineItemEntity lineItem : order.get().getConsumerlineItemId()) {
+		 * consumerLineItemRepository.delete(lineItem); }
+		 */
+		  orderRepository.deleteById(orderId);
+			
 		
-		orderRepository.deleteById(orderId);
 		
 		return "Order Succesfully Cancelled";
 	

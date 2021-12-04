@@ -6,9 +6,11 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 
 import com.eCommerce.eCommerceOrder.constants.OrderStatus;
@@ -31,9 +33,13 @@ public class ConsumerOrderEntity {
 	@Column(name="orderId")
 	private String orderId;
 	
-	@OneToMany
-	private List<ConsumerLineItemEntity> consumerlineItemId;
+	@OneToMany(fetch = FetchType.EAGER)
+	@JoinColumn(name="consumer_order_id")
+	private List<ConsumerLineItemEntity> consumerlineItem;
+	
+	
 	private String consumerId;
+	
 	private OrderStatus orderStatus;	
 	private Double totalAmount;
 	private LocalDate submitDate;

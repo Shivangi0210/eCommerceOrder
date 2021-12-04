@@ -3,6 +3,7 @@ package com.eCommerce.eCommerceOrder.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,37 +46,45 @@ public class OrderServiceImpl implements OrderService{
 		Double totalAmount =  Double.NaN;
 		OrderMapper mapper = new OrderMapper();		
 		
+		
 		totalAmount = request.getRequestItemList().stream().mapToDouble(x->{
 			Double value = itemMasterRepository.findPriceByItemName(x.getItemName());
-			if(value==null) {
-				throw new ItemNotFoundException();
-			}
+			x.setSellingPrice(value);
 			return value*x.getQuantity();
 		}).sum();
 		
+		Optional<ConsumerEntity> consumerEntity = consumerRepo.findByName(request.getName());
+		if(!consumerEntity.isPresent()){
+			consumerEntity = Optional.ofNullable(mapper.mapRequestToConsumerEntity(request));
+			consumerRepo.save(consumerEntity.get());
+			
+		}
 		
-		ConsumerEntity consumerEntity = mapper.mapRequestToConsumerEntity(request);
-		
-		consumerRepo.save(consumerEntity);
 		
 		List<ConsumerLineItemEntity> consumerLineItemEntity = request.getRequestItemList().stream()
 				.map(OrderMapper :: mapRequestToConsumerLineItemEntity)
 				.collect(Collectors.toList());
 		
 		consumerLineItemEntity.stream()
-		.forEach(x->x.setItemNumber
-				(itemMasterRepository.findByItemName
-						(x.getItemName()).orElseThrow(()-> new ItemNotFoundException()).getItemNumber()));
+		.forEach(x->{
+					Optional<ItemMasterEntity> itemMasterEntity = itemMasterRepository.findByItemName(x.getItemName());
+					x.setItemNumber(itemMasterEntity
+						.orElseThrow(()-> new ItemNotFoundException()).getItemNumber());
+					x.setSellingPrice(itemMasterEntity.get().getItemPrice());
+					
+			});
 		
 		consumerLineItemRepository.saveAll(consumerLineItemEntity);
 		
+		
 		ConsumerOrderEntity consumerOrderEntity = mapper.mapRequestToConsumerOrder(request);
-		consumerOrderEntity.setConsumerlineItemId(consumerLineItemEntity);
-		consumerOrderEntity.setConsumerId(consumerEntity.getConsumerId());
+		consumerOrderEntity.setConsumerlineItem(consumerLineItemEntity);
+		consumerEntity.ifPresent(x->consumerOrderEntity.setConsumerId(x.getConsumerId()));
 		consumerOrderEntity.setTotalAmount(totalAmount);
+		
 		orderRepository.save(consumerOrderEntity);
 		
-		return mapper.orderResponse(consumerEntity, consumerOrderEntity, request.getRequestItemList());
+		return mapper.orderResponse(consumerEntity.get(), consumerOrderEntity, request.getRequestItemList());
 	}
 
 	

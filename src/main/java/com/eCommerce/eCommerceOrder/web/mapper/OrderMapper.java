@@ -63,6 +63,8 @@ public class OrderMapper {
 		orderResponse.setRequestItemsList(input);
 		orderResponse.setTotalAmountofOrder(consumerOrderEntity.getTotalAmount());
 		orderResponse.setTotalItemsOrdered(consumerOrderEntity.getTotalItemsInOrder());
+		orderResponse.setDeliveryDate(consumerOrderEntity.getDeliveryDate());
+		orderResponse.setOrderCreatedDate(consumerOrderEntity.getSubmitDate());
 		
 		return orderResponse;
 	}

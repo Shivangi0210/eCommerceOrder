@@ -61,7 +61,7 @@ public class DeleteOrderServiceImplTest {
 						.orderStatus(OrderStatus.CREATED)
 						.submitDate(LocalDate.now())
 						.totalAmount(246.11)
-						.totalItemsInOrder(4).consumerlineItemId(lineItemList)
+						.totalItemsInOrder(4).consumerlineItem(lineItemList)
 						.build()));
 		
 		String result = serviceImpl.deleteOrder("1");

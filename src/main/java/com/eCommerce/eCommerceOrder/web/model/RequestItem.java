@@ -28,7 +28,7 @@ public class RequestItem {
 	@NotNull
 	private String modelNumber;
 	
-	@JsonIgnore
+	
 	private Double sellingPrice;
 
 

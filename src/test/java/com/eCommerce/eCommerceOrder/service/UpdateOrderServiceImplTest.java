@@ -113,7 +113,7 @@ public class UpdateOrderServiceImplTest {
 						.orderStatus(OrderStatus.CREATED)
 						.submitDate(LocalDate.now())
 						.totalAmount(246.11)
-						.totalItemsInOrder(4).consumerlineItemId(lineItemList)
+						.totalItemsInOrder(4).consumerlineItem(lineItemList)
 						.build()));
 		  
 		  given(consumerRepo.findById(anyString())).willReturn(Optional.ofNullable(
