@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 
 import org.assertj.core.api.Assertions;
@@ -19,10 +20,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.eCommerce.eCommerceOrder.constants.OrderStatus;
 import com.eCommerce.eCommerceOrder.dao.ConsumerLineItemRepository;
 import com.eCommerce.eCommerceOrder.dao.ConsumerRepository;
+import com.eCommerce.eCommerceOrder.dao.ItemMasterRepository;
 import com.eCommerce.eCommerceOrder.dao.OrderRepository;
 import com.eCommerce.eCommerceOrder.entity.ConsumerEntity;
 import com.eCommerce.eCommerceOrder.entity.ConsumerLineItemEntity;
 import com.eCommerce.eCommerceOrder.entity.ConsumerOrderEntity;
+import com.eCommerce.eCommerceOrder.entity.ItemMasterEntity;
 import com.eCommerce.eCommerceOrder.exception.OrderNotFoundException;
 import com.eCommerce.eCommerceOrder.web.model.InputOrder;
 import com.eCommerce.eCommerceOrder.web.model.OrderResponse;
@@ -51,6 +54,10 @@ public class UpdateOrderServiceImplTest {
 	
 	@Mock
 	ConsumerLineItemRepository consumerLineItemRepository;
+	
+
+	@Mock
+	ItemMasterRepository itemMasterRepository;
 	
 	@InjectMocks
 	UpdateOrderServiceImpl serviceImpl;
@@ -126,6 +133,10 @@ public class UpdateOrderServiceImplTest {
 				  .phoneNo("123456")
 				  .build()));
 		  
+			given(itemMasterRepository.findPriceByItemName(requestJson.getRequestItemList().get(0).getItemName())).willReturn(123.11);
+			
+			
+		
 		  OrderResponse response = serviceImpl.updateOrder("1", requestJson);
 		
 		  assertEquals("Updatedtest1",response.getName());
