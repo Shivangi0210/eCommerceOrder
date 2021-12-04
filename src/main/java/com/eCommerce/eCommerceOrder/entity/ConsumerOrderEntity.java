@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -33,7 +34,7 @@ public class ConsumerOrderEntity {
 	@Column(name="orderId")
 	private String orderId;
 	
-	@OneToMany(fetch = FetchType.EAGER)
+	@OneToMany(fetch = FetchType.LAZY ,cascade = CascadeType.ALL)
 	@JoinColumn(name="consumer_order_id")
 	private List<ConsumerLineItemEntity> consumerlineItem;
 	

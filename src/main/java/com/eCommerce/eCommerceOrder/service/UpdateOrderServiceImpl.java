@@ -3,6 +3,7 @@ package com.eCommerce.eCommerceOrder.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,7 +55,7 @@ public class UpdateOrderServiceImpl implements UpdateOrderService{
 		
 		consumer = consumerRepo.findById(order.get().getConsumerId());
 		
-		if(order.get().getOrderStatus().equals(OrderStatus.CREATED)&& consumer.isPresent()) {
+		if(consumer.isPresent()) {
 			ConsumerEntity consumerObj = consumer.get();
 			ConsumerOrderEntity orderObj = order.get();
 			if(!consumerObj.getBillingAddress().equalsIgnoreCase(request.getBillingAddress()))
@@ -73,39 +74,41 @@ public class UpdateOrderServiceImpl implements UpdateOrderService{
 					request.getRequestItemList().stream().mapToDouble(x->{
 					Double value = itemMasterRepository.findPriceByItemName(x.getItemName());
 					x.setSellingPrice(value);
-					if(value==null) {
-						throw new ItemNotFoundException();
-					}
-					return value*x.getQuantity();
+					return value!=null? value*x.getQuantity() : 0.0;
 				}).sum());
 			
-			// calculating the total no. of items in order
-			orderObj.setTotalItemsInOrder(orderObj.getTotalItemsInOrder()+
-					request.getRequestItemList()
-					.stream()
-					.filter(x->x.getQuantity()>0)
-					.mapToInt(RequestItem::getQuantity).sum());
-			
-			
+		
 			List<ConsumerLineItemEntity> newLineItemList = new ArrayList<>();
 			for(RequestItem reqItem: request.getRequestItemList()) {
 				ConsumerLineItemEntity newLineItem = new ConsumerLineItemEntity();
 				Double value = itemMasterRepository.findPriceByItemName(reqItem.getItemName());
+				if(value!=null) {
 					newLineItem.setItemName(reqItem.getItemName());
-					newLineItem.setItemNumber(reqItem.getItemName());
 					newLineItem.setItemQuantity(reqItem.getQuantity());
 					newLineItem.setModel(reqItem.getModelNumber());
 					newLineItem.setSellingPrice(value);
+					newLineItem.setStatus(OrderStatus.CREATED);
 				
-				newLineItemList.add(newLineItem);
-				consumerLineItemRepository.save(newLineItem);
+					newLineItemList.add(newLineItem);
+				}
+				
 			}
-			orderObj.setConsumerlineItem(newLineItemList);
-			updatedList = createRequestItemList(request.getRequestItemList(),newLineItemList);
+		//	orderObj.setConsumerlineItem(newLineItemList);
+			orderObj.getConsumerlineItem().addAll(newLineItemList);
+			// calculating the total no. of items in order
+			orderObj.setTotalItemsInOrder(orderObj.getTotalItemsInOrder()+
+					newLineItemList
+					.stream()
+					.filter(x->x.getItemQuantity()>0)
+					.mapToInt(ConsumerLineItemEntity::getItemQuantity).sum());
 			
+			
+			
+			orderRepository.saveAndFlush(orderObj);
+			
+			updatedList = createRequestItemList(orderId);
 			consumerRepo.save(consumerObj);
-			orderRepository.save(orderObj);
-			
+					
 		}
 		
 		log.info("order is updated");
@@ -115,20 +118,11 @@ public class UpdateOrderServiceImpl implements UpdateOrderService{
 	}
 
 
-	private List<RequestItem> createRequestItemList(List<RequestItem> requestItemList,
-			List<ConsumerLineItemEntity> newLineItemList) {
+	private List<RequestItem> createRequestItemList(String orderId) {
 		List<RequestItem> updatedList = new ArrayList<>();
+		List<ConsumerLineItemEntity> entity = orderRepository.findLineItemByOrderId(orderId);
 		
-		requestItemList.forEach(x->{
-			RequestItem requestItem = new RequestItem();
-			requestItem.setItemName(x.getItemName());
-			requestItem.setModelNumber(x.getModelNumber());
-			requestItem.setQuantity(x.getQuantity());
-			requestItem.setSellingPrice(x.getSellingPrice());
-			updatedList.add(requestItem);
-		});
-		
-		newLineItemList.forEach(x->{
+		entity.forEach(x->{
 			RequestItem requestItem = new RequestItem();
 			requestItem.setItemName(x.getItemName());
 			requestItem.setModelNumber(x.getModel());

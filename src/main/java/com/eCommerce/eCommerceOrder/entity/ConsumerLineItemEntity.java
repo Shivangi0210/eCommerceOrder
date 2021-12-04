@@ -2,9 +2,11 @@ package com.eCommerce.eCommerceOrder.entity;
 
 import javax.annotation.Generated;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 
 import com.eCommerce.eCommerceOrder.constants.OrderStatus;
 
@@ -24,10 +26,6 @@ public class ConsumerLineItemEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private String consumerLineItemId;
 	
-	
-	
-	private String itemNumber;
-	
 	private String model;
 	
 	private int itemQuantity;
@@ -37,6 +35,5 @@ public class ConsumerLineItemEntity {
 	private String itemName;
 	
 	private OrderStatus status;
-
 	
 }

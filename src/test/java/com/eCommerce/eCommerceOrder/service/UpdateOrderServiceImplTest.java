@@ -103,7 +103,6 @@ public class UpdateOrderServiceImplTest {
 		ConsumerLineItemEntity lineItem = ConsumerLineItemEntity.builder()
 				.consumerLineItemId("1")
 				.itemName("abc")
-				.itemNumber("123")
 				.itemQuantity(4)
 				.model("abc123")
 				.sellingPrice(123.11)

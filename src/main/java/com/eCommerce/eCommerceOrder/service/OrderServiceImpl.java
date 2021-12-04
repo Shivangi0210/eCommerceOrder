@@ -1,5 +1,6 @@
 package com.eCommerce.eCommerceOrder.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,14 +44,14 @@ public class OrderServiceImpl implements OrderService{
 	
 	public OrderResponse createOrder(InputOrder request) {
 		
-		Double totalAmount =  Double.NaN;
+		Double totalAmount =  0.0;
 		OrderMapper mapper = new OrderMapper();		
 		
 		
 		totalAmount = request.getRequestItemList().stream().mapToDouble(x->{
 			Double value = itemMasterRepository.findPriceByItemName(x.getItemName());
 			x.setSellingPrice(value);
-			return value*x.getQuantity();
+			return value!=null? value*x.getQuantity() : 0.0;
 		}).sum();
 		
 		Optional<ConsumerEntity> consumerEntity = consumerRepo.findByName(request.getName());
@@ -60,24 +61,19 @@ public class OrderServiceImpl implements OrderService{
 			
 		}
 		
-		
-		List<ConsumerLineItemEntity> consumerLineItemEntity = request.getRequestItemList().stream()
-				.map(OrderMapper :: mapRequestToConsumerLineItemEntity)
-				.collect(Collectors.toList());
-		
-		consumerLineItemEntity.stream()
-		.forEach(x->{
-					Optional<ItemMasterEntity> itemMasterEntity = itemMasterRepository.findByItemName(x.getItemName());
-					x.setItemNumber(itemMasterEntity
-						.orElseThrow(()-> new ItemNotFoundException()).getItemNumber());
-					x.setSellingPrice(itemMasterEntity.get().getItemPrice());
-					
-			});
-		
-		consumerLineItemRepository.saveAll(consumerLineItemEntity);
+		List<ConsumerLineItemEntity> consumerLineItemEntity = new ArrayList<>();
+		for(RequestItem x : request.getRequestItemList()) {
+			Optional<ItemMasterEntity> itemMasterEntity = itemMasterRepository.findByItemName(x.getItemName());
+			if(itemMasterEntity.isPresent()) {
+				ConsumerLineItemEntity entity = mapper.mapRequestToConsumerLineItemEntity(x);
+				entity.setSellingPrice(itemMasterEntity.get().getItemPrice());
+				consumerLineItemEntity.add(entity);
+			}
+		}
 		
 		
-		ConsumerOrderEntity consumerOrderEntity = mapper.mapRequestToConsumerOrder(request);
+		
+		ConsumerOrderEntity consumerOrderEntity = mapper.mapRequestToConsumerOrder(request.getModeOfPayment(),consumerLineItemEntity);
 		consumerOrderEntity.setConsumerlineItem(consumerLineItemEntity);
 		consumerEntity.ifPresent(x->consumerOrderEntity.setConsumerId(x.getConsumerId()));
 		consumerOrderEntity.setTotalAmount(totalAmount);

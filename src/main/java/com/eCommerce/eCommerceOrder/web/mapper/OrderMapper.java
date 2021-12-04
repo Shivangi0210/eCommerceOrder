@@ -28,7 +28,7 @@ public class OrderMapper {
 		
 	}
 
-	public static ConsumerLineItemEntity mapRequestToConsumerLineItemEntity(RequestItem request) {
+	public ConsumerLineItemEntity mapRequestToConsumerLineItemEntity(RequestItem request) {
 		ConsumerLineItemEntity entity = new ConsumerLineItemEntity();
 		
 		entity.setItemQuantity(request.getQuantity());
@@ -39,17 +39,16 @@ public class OrderMapper {
 		
 	}
 
-	public ConsumerOrderEntity mapRequestToConsumerOrder(InputOrder request) {
+	public ConsumerOrderEntity mapRequestToConsumerOrder(String modeOfPayment, List<ConsumerLineItemEntity> lineItemEntity) {
 		ConsumerOrderEntity consumerOrderEntity = new ConsumerOrderEntity();
 		consumerOrderEntity.setDeliveryDate(LocalDate.now().plusDays(7));
-		consumerOrderEntity.setModeOfPayment(request.getModeOfPayment());
+		consumerOrderEntity.setModeOfPayment(modeOfPayment);
 		consumerOrderEntity.setOrderStatus(OrderStatus.CREATED);
 		consumerOrderEntity.setSubmitDate(LocalDate.now());
-		
-		consumerOrderEntity.setTotalItemsInOrder(request.getRequestItemList()
+		consumerOrderEntity.setTotalItemsInOrder(lineItemEntity
 				.stream()
-				.filter(x->x.getQuantity()>0)
-				.mapToInt(RequestItem::getQuantity).sum());
+				.filter(x->x.getItemQuantity()>0)
+				.mapToInt(ConsumerLineItemEntity::getItemQuantity).sum());
 		return consumerOrderEntity;
 	}
 	
