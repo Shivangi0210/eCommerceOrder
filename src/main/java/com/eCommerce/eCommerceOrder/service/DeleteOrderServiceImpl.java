@@ -13,6 +13,7 @@ import com.eCommerce.eCommerceOrder.dao.ItemMasterRepository;
 import com.eCommerce.eCommerceOrder.dao.OrderRepository;
 import com.eCommerce.eCommerceOrder.entity.ConsumerLineItemEntity;
 import com.eCommerce.eCommerceOrder.entity.ConsumerOrderEntity;
+import com.eCommerce.eCommerceOrder.exception.OrderNotFoundException;
 import com.eCommerce.eCommerceOrder.web.model.InputOrder;
 import com.eCommerce.eCommerceOrder.web.model.OrderResponse;
 
@@ -25,28 +26,16 @@ public class DeleteOrderServiceImpl implements DeleteOrderService {
 	@Autowired
 	OrderRepository orderRepository;
 	
-	@Autowired
-	ConsumerLineItemRepository consumerLineItemRepository;
-	
-
-	
-	
 	@Override
 	public String deleteOrder(String orderId) {
-		Optional<ConsumerOrderEntity> order = orderRepository.findById(orderId);
-		
-		  order.ifPresent(x->{ x.getConsumerlineItem().stream().forEach(y->{
-		  consumerLineItemRepository.delete(y); }); });
-		 
-		  
-		/*
-		 * for(ConsumerLineItemEntity lineItem : order.get().getConsumerlineItemId()) {
-		 * consumerLineItemRepository.delete(lineItem); }
-		 */
+
+		if(orderRepository.findById(orderId).isPresent()) {
 		  orderRepository.deleteById(orderId);
+		}
+		else {
+			throw new OrderNotFoundException();
+		}
 			
-		
-		
 		return "Order Succesfully Cancelled";
 	
 	}

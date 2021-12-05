@@ -80,24 +80,32 @@ public class UpdateOrderServiceImpl implements UpdateOrderService{
 		
 			List<ConsumerLineItemEntity> newLineItemList = new ArrayList<>();
 			for(RequestItem reqItem: request.getRequestItemList()) {
+				orderObj.getConsumerlineItem().stream()
+				.filter(x->x.getItemName().equalsIgnoreCase(reqItem.getItemName()))
+				.map(x-> {x.setItemQuantity(x.getItemQuantity()+reqItem.getQuantity()); 
+							return x;
+							})
+				.collect(Collectors.toList());
+			}
+			for(RequestItem reqItem: request.getRequestItemList()) {
 				ConsumerLineItemEntity newLineItem = new ConsumerLineItemEntity();
 				Double value = itemMasterRepository.findPriceByItemName(reqItem.getItemName());
-				if(value!=null) {
+				if(value!=null && !orderObj.getConsumerlineItem().stream().anyMatch(x->x.getItemName().equalsIgnoreCase(reqItem.getItemName()))) {
 					newLineItem.setItemName(reqItem.getItemName());
 					newLineItem.setItemQuantity(reqItem.getQuantity());
 					newLineItem.setModel(reqItem.getModelNumber());
 					newLineItem.setSellingPrice(value);
 					newLineItem.setStatus(OrderStatus.CREATED);
-				
 					newLineItemList.add(newLineItem);
 				}
 				
+				
 			}
-		//	orderObj.setConsumerlineItem(newLineItemList);
 			orderObj.getConsumerlineItem().addAll(newLineItemList);
+			
 			// calculating the total no. of items in order
-			orderObj.setTotalItemsInOrder(orderObj.getTotalItemsInOrder()+
-					newLineItemList
+			orderObj.setTotalItemsInOrder(
+					orderObj.getConsumerlineItem()
 					.stream()
 					.filter(x->x.getItemQuantity()>0)
 					.mapToInt(ConsumerLineItemEntity::getItemQuantity).sum());

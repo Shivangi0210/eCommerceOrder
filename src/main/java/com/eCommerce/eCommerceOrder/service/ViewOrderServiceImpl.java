@@ -53,6 +53,8 @@ public class ViewOrderServiceImpl implements ViewOrderService{
 			response.setPhoneNo(consumer.get().getPhoneNo());
 			response.setTotalAmountofOrder(order.get().getTotalAmount());
 			response.setTotalItemsOrdered(order.get().getTotalItemsInOrder());
+			response.setDeliveryDate(order.get().getDeliveryDate());
+			response.setOrderCreatedDate(order.get().getSubmitDate());
 			List<RequestItem> itemList = new ArrayList<>();
 			order.get().getConsumerlineItem().stream()
 				.forEach(x->{

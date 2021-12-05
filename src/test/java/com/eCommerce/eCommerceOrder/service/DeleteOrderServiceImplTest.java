@@ -1,6 +1,8 @@
 package com.eCommerce.eCommerceOrder.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 
@@ -19,6 +21,9 @@ import com.eCommerce.eCommerceOrder.dao.ConsumerLineItemRepository;
 import com.eCommerce.eCommerceOrder.dao.OrderRepository;
 import com.eCommerce.eCommerceOrder.entity.ConsumerLineItemEntity;
 import com.eCommerce.eCommerceOrder.entity.ConsumerOrderEntity;
+import com.eCommerce.eCommerceOrder.exception.OrderNotFoundException;
+import com.eCommerce.eCommerceOrder.web.model.OrderResponse;
+
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -31,15 +36,11 @@ public class DeleteOrderServiceImplTest {
 	@Mock
 	OrderRepository orderRepository;
 	
-	@Mock
-	ConsumerLineItemRepository consumerLineItemRepository;
-	
 	@InjectMocks
 	DeleteOrderServiceImpl serviceImpl;
 	
 	@Test
 	public void deleteOrder_success_test() {
-		
 		List<ConsumerLineItemEntity> lineItemList = new ArrayList<>();
 		ConsumerLineItemEntity lineItem = ConsumerLineItemEntity.builder()
 				.consumerLineItemId("1")
@@ -62,10 +63,25 @@ public class DeleteOrderServiceImplTest {
 						.totalAmount(246.11)
 						.totalItemsInOrder(4).consumerlineItem(lineItemList)
 						.build()));
-		
+	
 		String result = serviceImpl.deleteOrder("1");
 		
 		assertEquals("Order Succesfully Cancelled",result);
+		
+	}
+	@Test
+	public void deleteOrder_exception_test() {
+		
+		OrderNotFoundException exception = assertThrows(OrderNotFoundException.class,
+				()->{
+					given(orderRepository.findById(anyString())).willThrow(OrderNotFoundException.class);
+					  
+					String result = serviceImpl.deleteOrder("10");
+				});
+		
+		
+		  
+		assertNotNull(exception);
 		
 	}
 

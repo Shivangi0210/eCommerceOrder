@@ -62,12 +62,14 @@ public class OrderServiceImpl implements OrderService{
 		}
 		
 		List<ConsumerLineItemEntity> consumerLineItemEntity = new ArrayList<>();
+		List<RequestItem> updatedList = new ArrayList<>();
 		for(RequestItem x : request.getRequestItemList()) {
 			Optional<ItemMasterEntity> itemMasterEntity = itemMasterRepository.findByItemName(x.getItemName());
 			if(itemMasterEntity.isPresent()) {
 				ConsumerLineItemEntity entity = mapper.mapRequestToConsumerLineItemEntity(x);
 				entity.setSellingPrice(itemMasterEntity.get().getItemPrice());
 				consumerLineItemEntity.add(entity);
+				updatedList.add(x);
 			}
 		}
 		
@@ -80,11 +82,13 @@ public class OrderServiceImpl implements OrderService{
 		
 		orderRepository.save(consumerOrderEntity);
 		
-		return mapper.orderResponse(consumerEntity.get(), consumerOrderEntity, request.getRequestItemList());
+		
+		return mapper.orderResponse(consumerEntity.get(), consumerOrderEntity, updatedList);
 	}
 
 	
-
+	
+	
 	
 
 }
